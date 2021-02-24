@@ -1,7 +1,7 @@
 pragma solidity =0.5.16;
 
-import './interfaces/IWETH.sol'; 
-import './interfaces/IERC20.sol'; 
+import '../interfaces/IWETH.sol'; 
+import '../interfaces/IERC20.sol'; 
 
 contract SWETH is IERC20, IWETH {
     string public name     = "Wrapped Ether";

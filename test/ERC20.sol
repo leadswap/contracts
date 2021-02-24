@@ -1,8 +1,8 @@
 pragma solidity =0.5.16;
 
-import '../DaoswapERC20.sol';
+import '../YouswapERC20.sol';
 
-contract ERC20 is DaoswapERC20 {
+contract ERC20 is YouswapERC20 {
     constructor(uint _totalSupply) public {
         _mint(msg.sender, _totalSupply);
     }

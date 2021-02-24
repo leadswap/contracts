@@ -1,15 +1,15 @@
 pragma solidity =0.5.16;
 
-import './interfaces/IDaoswapERC20.sol';
-import './libraries/SafeMath.sol';
+import '../interfaces/IERC20.sol';
+import '../libraries/SafeMath.sol';
 
-contract DaoswapERC20 is IDaoswapERC20 {
+contract USDTERC20 is IERC20 {
     using SafeMath for uint;
 
-    string public constant name = 'Daoswap';
-    string public constant symbol = 'DSP';
-    uint8 public constant decimals = 18;
-    uint  public totalSupply;
+    string public constant name = 'USDT';
+    string public constant symbol = 'USDT';
+    uint8 public constant decimals = 6;
+    uint  public totalSupply = 10**10*10**uint256(decimals);
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
 
@@ -24,18 +24,6 @@ contract DaoswapERC20 is IDaoswapERC20 {
         assembly {
             chainId := chainid
         }
-    }
-
-    function _mint(address to, uint value) internal {
-        totalSupply = totalSupply.add(value);
-        balanceOf[to] = balanceOf[to].add(value);
-        emit Transfer(address(0), to, value);
-    }
-
-    function _burn(address from, uint value) internal {
-        balanceOf[from] = balanceOf[from].sub(value);
-        totalSupply = totalSupply.sub(value);
-        emit Transfer(from, address(0), value);
     }
 
     function _approve(address owner, address spender, uint value) private {

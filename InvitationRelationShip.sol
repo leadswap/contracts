@@ -51,22 +51,17 @@ contract InvitationRelationShip is IDelegate {
         conOwnerAddr = msg.sender;
         
         // TODO init Invitation root address
-        deleRootAddr = address(0xFF);
+        deleRootAddr = address(0x30AA782A4631307F9A1c05EbD20467Ac6F0D7B0A);
         
         // TODO reward ranks
-        rewardRanks = 3;
+        rewardRanks = 2;
         
         // TODO reward ranks detail (percent)
-        rewardRanksDetail = [10, 5, 2];
+        rewardRanksDetail = [10, 5];
         
-        // TODO max members per delegate
-        maxMemberCount = 100;
-        
-        // TODO min token value needs
-        minTokenNeeds = 0;
-        
+
         // TODO max delegate ranks to trace
-        maxDelegateRanks = 3;
+        maxDelegateRanks = 2;
     }
     
     function set_dao_contract_address(address daoConAddr) external
@@ -89,105 +84,10 @@ contract InvitationRelationShip is IDelegate {
             require(addrToDelegateAddr[inviterCode] != ZERO_ADDRESS, "address is not existed");
         }
         
-        bool found = false;
-        address[] memory memberAddrs;
-        address inviter = inviterCode;
-        for (uint32 i = 0; i < maxDelegateRanks + 1; i++) {
-            memberAddrs = addrToMemberAddrs[inviter];
-            uint256 balance = IDAO(daoAddress).getercBalanceof(inviter);
-            if ((memberAddrs.length >= maxMemberCount) || (balance < minTokenNeeds)) {
-                // do nothing and go ahead
-            } else {
-                // find, break
-                found = true;
-                break;
-            }
-            
-            address delegateAddr = addrToDelegateAddr[inviter];
-            if (delegateAddr == ZERO_ADDRESS) {
-                // no delegate, break
-                break;
-            } else {
-                inviter = delegateAddr;
-            }
-        }
+        addrToDelegateAddr[msg.sender] = inviterCode;
+        addrToMemberAddrs[inviterCode].push(msg.sender);
         
-        // not found at final
-        if (!found) {
-            inviter = deleRootAddr;
-        }
-        
-        addrToDelegateAddr[msg.sender] = inviter;
-        addrToMemberAddrs[inviter].push(msg.sender);
-        
-        emit AddRelation(msg.sender, inviter);
-    }
-    
-    function del_invitation_relation(address addr)
-    needDaoConAddrSet()
-    needAddrExist(msg.sender) 
-    needAddrExist(addr) 
-    needHasInvitationRelation(addr, msg.sender)
-    external {
-        //remove orig invitation relation
-        bool found = false;
-        uint32 index = 0;
-        address inviter = msg.sender;
-        
-        delete addrToDelegateAddr[addr];
-        address[] storage origMemberAddrs = addrToMemberAddrs[inviter];
-        for (index = 0; index < origMemberAddrs.length; index++) {
-            if (origMemberAddrs[index] == addr) {
-                found = true;
-                break;
-            }
-        }
-        
-        if (found) {
-            if (index != origMemberAddrs.length - 1) {
-                delete origMemberAddrs[index];
-                origMemberAddrs[index] = origMemberAddrs[origMemberAddrs.length-1];
-            }
-            origMemberAddrs.length--;
-            emit DelRelation(addr, inviter);
-        }
-        
-        // add new invitation relation
-        found = false;
-        address[] memory memberAddrs;
-        inviter = addrToDelegateAddr[inviter];
-        if (inviter != ZERO_ADDRESS) {
-            for (uint32 i = 0; i < maxDelegateRanks; i++) {
-                memberAddrs = addrToMemberAddrs[inviter];
-                uint256 balance = IDAO(daoAddress).getercBalanceof(inviter);
-                if ((memberAddrs.length >= maxMemberCount) || (balance < minTokenNeeds)) {
-                    // do nothing and go ahead
-                } else {
-                    // find, break
-                    found = true;
-                    break;
-                }
-            
-                address delegateAddr = addrToDelegateAddr[inviter];
-                if (delegateAddr == ZERO_ADDRESS) {
-                    // no delegate, break
-                    break;
-                } else {
-                    inviter = delegateAddr;
-                }
-            }
-           
-        } 
-        
-        // not found at final
-        if (!found) {
-            inviter = deleRootAddr;
-        }
-        
-        addrToDelegateAddr[addr] = inviter;
-        addrToMemberAddrs[inviter].push(addr);
-        
-        emit AddRelation(addr, inviter);
+        emit AddRelation(msg.sender, inviterCode);
     }
     
     function getDelegateRewardRanks(address addr) external view returns (DelegatePre[] memory)
@@ -268,12 +168,6 @@ contract InvitationRelationShip is IDelegate {
     
     // token reward details
     uint32[] internal rewardRanksDetail;
-    
-    // max members count per delegate
-    uint32 internal maxMemberCount;
-    
-    // min token value needs
-    uint256 internal minTokenNeeds;
     
     // max delegate ranks to trace
     uint32 internal maxDelegateRanks;

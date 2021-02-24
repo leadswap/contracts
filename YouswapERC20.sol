@@ -1,39 +1,46 @@
-pragma solidity=0.5.16;
+pragma solidity =0.5.16;
 
+import './interfaces/ISwapERC20.sol';
 import './libraries/SafeMath.sol';
-import './interfaces/IERCMint20.sol';
 
-contract ErcMint20 is IERCMint20 {
+contract YouswapERC20 is ISwapERC20 {
     using SafeMath for uint;
 
-    string public constant name = 'ErcMint20';
-    string public constant symbol = 'ErcMint20';
+    string public constant name = 'LeadSwap';
+    string public constant symbol = 'LSP';
     uint8 public constant decimals = 18;
     uint  public totalSupply;
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
-    mapping(address => mapping(address=>uint)) public user_swap_payblock;
-    address owner;
+
+    bytes32 public DOMAIN_SEPARATOR;
+    mapping(address => uint) public nonces;
 
     event Approval(address indexed owner, address indexed spender, uint value);
     event Transfer(address indexed from, address indexed to, uint value);
 
     constructor() public {
-        owner = msg.sender;
+        uint chainId;
+        assembly {
+            chainId := chainid
+        }
     }
-    function changeOwner(address new_owner) external{
-        require(msg.sender == owner);
-        owner = new_owner;
-    }
+
     function _mint(address to, uint value) internal {
         totalSupply = totalSupply.add(value);
-        balanceOf[to] = balanceOf[to].add(value); // is initial value 0?
+        balanceOf[to] = balanceOf[to].add(value);
         emit Transfer(address(0), to, value);
     }
 
-    function _approve(address origen_owner, address spender, uint value) private {
-        allowance[origen_owner][spender] = value;
-        emit Approval(origen_owner, spender, value);
+    function _burn(address from, uint value) internal {
+        balanceOf[from] = balanceOf[from].sub(value);
+        totalSupply = totalSupply.sub(value);
+        emit Transfer(from, address(0), value);
+    }
+
+    function _approve(address owner, address spender, uint value) private {
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
     }
 
     function _transfer(address from, address to, uint value) private {
@@ -41,18 +48,7 @@ contract ErcMint20 is IERCMint20 {
         balanceOf[to] = balanceOf[to].add(value);
         emit Transfer(from, to, value);
     }
-    function mint(address to, uint value) external{
-        require(msg.sender == owner);
-        _mint(to,value);
-    }
-    function getStartblock(address user,address swap_addr) external view returns (uint256 lastblocknum){
-        return user_swap_payblock[user][swap_addr];
-    }
-	function setAddressBlock(address user,address swap_addr,uint256 lastblocknum) external returns (bool success){
-	    require(msg.sender == owner);
-	    user_swap_payblock[user][swap_addr] = lastblocknum;
-	    return true;
-	}
+
     function approve(address spender, uint value) external returns (bool) {
         _approve(msg.sender, spender, value);
         return true;
